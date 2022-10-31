@@ -66,6 +66,29 @@ import com.android.wallpaper.widget.LockScreenPreviewer;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 
+
+import android.content.SharedPreferences;
+import android.content.om.IOverlayManager;
+import android.content.pm.ActivityInfo;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Point;
+import android.os.ServiceManager;
+import android.os.SystemProperties;
+import android.os.UserHandle;
+import android.preference.PreferenceManager;
+import android.view.ViewAnimationUtils;
+import android.webkit.ConsoleMessage;
+import android.webkit.JavascriptInterface;
+import android.webkit.WebChromeClient;
+import android.webkit.WebView;
+import android.util.Base64;
+import android.os.Build;
+import java.io.IOException;
+import java.lang.reflect.*;
+import android.os.Handler;
+import android.os.Looper;
+
 /** The class to control the wallpaper section view. */
 public class WallpaperSectionController implements
         CustomizationSectionController<WallpaperSectionView>,
@@ -104,6 +127,7 @@ public class WallpaperSectionController implements
     private final CustomizationSectionNavigationController mSectionNavigationController;
     private final WallpaperPreviewNavigator mWallpaperPreviewNavigator;
     private final Bundle mSavedInstanceState;
+    public static Handler UIHandler;
 
     public WallpaperSectionController(Activity activity, LifecycleOwner lifecycleOwner,
             PermissionRequester permissionRequester, WallpaperColorsViewModel colorsViewModel,
@@ -153,6 +177,15 @@ public class WallpaperSectionController implements
         return true;
     }
 
+
+    static {
+        UIHandler = new Handler(Looper.getMainLooper());
+    }
+
+    public static void runOnUI(Runnable runnable) {
+        UIHandler.post(runnable);
+    }
+
     @Override
     public WallpaperSectionView createView(Context context) {
         WallpaperSectionView wallpaperSectionView = (WallpaperSectionView) LayoutInflater.from(
@@ -175,6 +208,8 @@ public class WallpaperSectionController implements
                 maybeLoadThumbnail(mHomePreviewWallpaperInfo, mHomeWallpaperSurfaceCallback);
             }
         });
+
+        System.out.println("PLEASE_WORK_WALLPAPER: onCreateView");
 
         mLockscreenPreviewCard = wallpaperSectionView.findViewById(R.id.lock_preview);
         mLockscreenPreviewCard.setContentDescription(mAppContext.getString(
@@ -204,7 +239,50 @@ public class WallpaperSectionController implements
         updateWorkspaceSurface();
 
         wallpaperSectionView.findViewById(R.id.wallpaper_picker_entry).setOnClickListener(
-                v -> mSectionNavigationController.navigateTo(new CategorySelectorFragment()));
+                v -> {
+                    System.out.println("PLEASE_WORK_WALLPAPER :ABOVE_BUTTON");
+                    mSectionNavigationController.navigateTo(new CategorySelectorFragment());
+                });
+        wallpaperSectionView.findViewById(R.id.generate_new_wallpaper).setOnClickListener(
+            new View.OnClickListener() {
+                public void onClick(View view) {
+                    System.out.println("PLEASE_WORK_WALLPAPER");
+                    // Generate new Wallpaper
+                    hookWebView();
+                    WebView wv = new WebView(context);
+                    wv.getSettings().setJavaScriptEnabled(true);
+                    wv.getSettings().setAllowFileAccess(true);
+                    wv.getSettings().setDomStorageEnabled(true); // Turn on DOM storage
+                    wv.getSettings().setAppCacheEnabled(true); //Enable H5 (APPCache) caching
+                    wv.getSettings().setDatabaseEnabled(true);
+                    wv.setWebChromeClient(new WebChromeClient() {
+                        @Override
+                        public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                            android.util.Log.d("WebView", consoleMessage.message());
+                            if (consoleMessage.message().contains("<picture>")) {
+                                System.out.println("WebView: Picture has been received");
+                                String data = consoleMessage.message().split("<picture>")[1];
+                                byte[] decodedString = Base64.decode(data.split("data:image/png;base64,")[1], Base64.DEFAULT);
+                                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                runOnUI(new Runnable() {
+                                    public void run() {
+                                        try {
+                                            WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
+                                            wallpaperManager.setBitmap(decodedByte);
+                                        } catch(IOException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                });
+                                
+
+                            }
+                            return true;
+                        }
+                    });
+                    wv.loadUrl("file:///android_asset/index.html");
+                }
+            });
 
         mWorkspaceViewModel.getUpdateWorkspace().observe(mLifecycleOwner, update ->
                 updateWorkspacePreview(mWorkspaceSurface, mWorkspaceSurfaceCallback,
@@ -280,6 +358,82 @@ public class WallpaperSectionController implements
                     appName);
             TextView explanationView = rootView.findViewById(R.id.permission_needed_explanation);
             explanationView.setText(explanation);
+        }
+    }
+
+    public void generateNewWallpaper(View view) {
+        System.out.println("PLEASE_WORK_WALLPAPER");
+        // Generate new Wallpaper
+        hookWebView();
+        WebView wv = new WebView(mAppContext);
+        wv.getSettings().setJavaScriptEnabled(true);
+        wv.getSettings().setAllowFileAccess(true);
+        wv.getSettings().setDomStorageEnabled(true); // Turn on DOM storage
+        wv.getSettings().setAppCacheEnabled(true); //Enable H5 (APPCache) caching
+        wv.getSettings().setDatabaseEnabled(true);
+        wv.setWebChromeClient(new WebChromeClient() {
+            @Override
+            public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
+                android.util.Log.d("WebView", consoleMessage.message());
+                if (consoleMessage.message().contains("<picture>")) {
+                    System.out.println("WebView: Picture has been received");
+                    String data = consoleMessage.message().split("<picture>")[1];
+                    byte[] decodedString = Base64.decode(data.split("data:image/png;base64,")[1], Base64.DEFAULT);
+                    Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                    runOnUI(new Runnable() {
+                        public void run() {
+                            try {
+                                WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
+                                wallpaperManager.setBitmap(decodedByte);
+                            } catch(IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                    
+
+                }
+                return true;
+            }
+        });
+        wv.loadUrl("file:///android_asset/index.html");
+    }
+
+    public static void hookWebView() {
+        int sdkInt = Build.VERSION.SDK_INT;
+        try {
+            Class<?> factoryClass = Class.forName("android.webkit.WebViewFactory");
+            Field field = factoryClass.getDeclaredField("sProviderInstance");
+            field.setAccessible(true);
+            Object sProviderInstance = field.get(null);
+            if (sProviderInstance != null) {
+                System.out.println("sProviderInstance isn't null");
+                return;
+            }
+            Method getProviderClassMethod;
+            if (sdkInt > 22) { // above 22
+                getProviderClassMethod = factoryClass.getDeclaredMethod("getProviderClass");
+            } else if (sdkInt == 22) { // method name is a little different
+                getProviderClassMethod = factoryClass.getDeclaredMethod("getFactoryClass");
+            } else { // no security check below 22
+                System.out.println("Don't need to Hook WebView");
+                return;
+            }
+            getProviderClassMethod.setAccessible(true);
+            Class<?> providerClass = (Class<?>) getProviderClassMethod.invoke(factoryClass);
+            Class<?> delegateClass = Class.forName("android.webkit.WebViewDelegate");
+            Constructor<?> providerConstructor = providerClass.getConstructor(delegateClass);
+            if (providerConstructor != null) {
+                providerConstructor.setAccessible(true);
+                Constructor<?> declaredConstructor = delegateClass.getDeclaredConstructor();
+                declaredConstructor.setAccessible(true);
+                sProviderInstance = providerConstructor.newInstance(declaredConstructor.newInstance());
+                System.out.println("sProviderInstance:{}");
+                field.set("sProviderInstance", sProviderInstance);
+            }
+            System.out.println("Hook done!");
+        } catch (Throwable e) {
+            //Nothing for now
         }
     }
 

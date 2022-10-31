@@ -88,6 +88,8 @@ public class CustomizationPickerActivity extends FragmentActivity implements App
 
         // Restore this Activity's state before restoring contained Fragments state.
         super.onCreate(savedInstanceState);
+
+        System.out.println("WALLPAPER_ONCREATE_BLUELINE");
         // Trampoline for the two panes
         final MultiPanesChecker mMultiPanesChecker = new LargeScreenMultiPanesChecker();
         if (mMultiPanesChecker.isMultiPanesEnabled(this)) {

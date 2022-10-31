@@ -80,5 +80,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/permission_needed" />
 
+        <Button
+            android:id="@+id/generate_new_wallpaper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginVertical="@dimen/wallpaper_picker_entry_margin_vertical"
+            android:paddingHorizontal="@dimen/wallpaper_picker_entry_horizontal_padding"
+            android:background="@drawable/btn_transparent_background"
+            android:textColor="?android:attr/colorAccent"
+            android:drawablePadding="@dimen/wallpaper_picker_entry_drawable_padding"
+            android:drawableStart="@drawable/ic_nav_wallpaper"
+            android:drawableTint="?android:attr/colorAccent"
+            android:text="Generate new ethOS Wallpaper"
+            android:onClick="generateNewWallpaper"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/wallpaper_picker_entry" />
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.android.wallpaper.picker.WallpaperSectionView>
