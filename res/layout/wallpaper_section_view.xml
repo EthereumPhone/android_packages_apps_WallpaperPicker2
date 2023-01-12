@@ -69,13 +69,13 @@
             android:layout_height="wrap_content"
             android:layout_marginVertical="@dimen/wallpaper_picker_entry_margin_vertical"
             android:paddingHorizontal="@dimen/wallpaper_picker_entry_horizontal_padding"
+            android:layout_marginTop="98dp"
             android:background="@drawable/btn_transparent_background"
             android:textColor="?android:attr/colorAccent"
             android:drawablePadding="@dimen/wallpaper_picker_entry_drawable_padding"
             android:drawableStart="@drawable/ic_nav_wallpaper"
             android:drawableTint="?android:attr/colorAccent"
             android:text="@string/wallpaper_picker_entry_title"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/permission_needed" />
@@ -93,7 +93,6 @@
             android:drawableTint="?android:attr/colorAccent"
             android:text="Generate new ethOS Wallpaper"
             android:onClick="generateNewWallpaper"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/wallpaper_picker_entry" />
@@ -110,7 +109,6 @@
             android:drawableStart="@drawable/ic_nav_wallpaper"
             android:drawableTint="?android:attr/colorAccent"
             android:text="Save ethOS Wallpaper to Gallery"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/generate_new_wallpaper" />
