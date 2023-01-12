@@ -37,6 +37,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.graphics.Canvas;
+import android.provider.MediaStore;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.widget.Toast;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -269,6 +274,7 @@ public class WallpaperSectionController implements
                                         try {
                                             WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
                                             wallpaperManager.setBitmap(decodedByte);
+                                            refreshCurrentWallpapers(/* forceRefresh= */ mSavedInstanceState == null);
                                         } catch(IOException e) {
                                             e.printStackTrace();
                                         }
@@ -283,6 +289,13 @@ public class WallpaperSectionController implements
                     wv.loadUrl("file:///android_asset/index.html");
                 }
             });
+            wallpaperSectionView.findViewById(R.id.save_new_wallpaper).setOnClickListener(
+                new View.OnClickListener() {
+                    public void onClick(View view) {
+                        saveCurrentWallpaper(view);
+                        Toast.makeText(mAppContext, "Wallpaper saved", Toast.LENGTH_SHORT).show();
+                    }
+                });
 
         mWorkspaceViewModel.getUpdateWorkspace().observe(mLifecycleOwner, update ->
                 updateWorkspacePreview(mWorkspaceSurface, mWorkspaceSurfaceCallback,
@@ -397,6 +410,25 @@ public class WallpaperSectionController implements
             }
         });
         wv.loadUrl("file:///android_asset/index.html");
+    }
+
+    public Bitmap drawableToBitmap(Drawable drawable) {
+        if (drawable instanceof BitmapDrawable) {
+            return ((BitmapDrawable) drawable).getBitmap();
+        }
+
+        Bitmap bitmap = Bitmap.createBitmap(drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight(), Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+        drawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+        drawable.draw(canvas);
+
+        return bitmap;
+    }
+
+    public void saveCurrentWallpaper(View view) {
+        WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
+        final Drawable wallpaperDrawable = wallpaperManager.getDrawable();
+        MediaStore.Images.Media.insertImage(mAppContext.getContentResolver(), drawableToBitmap(wallpaperDrawable), "" , "");
     }
 
     public static void hookWebView() {
