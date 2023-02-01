@@ -410,6 +410,7 @@ public class WallpaperSectionController implements
             }
         });
         wv.loadUrl("file:///android_asset/index.html");
+        showCurrentWallpaper(view,true);
     }
 
     public Bitmap drawableToBitmap(Drawable drawable) {
