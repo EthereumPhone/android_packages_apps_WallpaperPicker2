@@ -108,7 +108,7 @@
             android:drawablePadding="@dimen/wallpaper_picker_entry_drawable_padding"
             android:drawableStart="@drawable/ic_nav_wallpaper"
             android:drawableTint="?android:attr/colorAccent"
-            android:text="Save ethOS Wallpaper to Gallery"
+            android:text="Save ethOS Wallpaper to your Gallery"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/generate_new_wallpaper" />

@@ -274,7 +274,7 @@ public class WallpaperSectionController implements
                                         try {
                                             WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
                                             wallpaperManager.setBitmap(decodedByte);
-                                            refreshCurrentWallpapers(/* forceRefresh= */ mSavedInstanceState == null);
+                                            refreshCurrentWallpapers(true);
                                         } catch(IOException e) {
                                             e.printStackTrace();
                                         }
@@ -398,6 +398,7 @@ public class WallpaperSectionController implements
                             try {
                                 WallpaperManager wallpaperManager = WallpaperManager.getInstance(mAppContext);
                                 wallpaperManager.setBitmap(decodedByte);
+                                refreshCurrentWallpapers(true);
                             } catch(IOException e) {
                                 e.printStackTrace();
                             }
